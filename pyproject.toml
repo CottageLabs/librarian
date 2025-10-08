@@ -1,7 +1,7 @@
 [project]
 name = "librarian"
 version = "0.1.0"
-description = "Add your description here"
+description = "Command line tool and library for manage your vector store"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

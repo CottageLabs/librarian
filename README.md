@@ -1,6 +1,6 @@
 Librarian
 ---------------------------
-Command line tool or sdk to manage your vector store
+Command line tool and library for manage your vector store
 
 Features:
 

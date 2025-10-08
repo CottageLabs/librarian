@@ -22,4 +22,4 @@ where = ["."]
 include = ["librarian*"]
 
 [project.scripts]
-librarian = "librarian.librarian_cli:librarian"
+librarian = "librarian.cli:librarian"

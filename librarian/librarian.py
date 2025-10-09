@@ -62,6 +62,11 @@ class Librarian:
         with self.dao.create_session() as session:
             return list(session.query(LibraryFile).all())
 
+    def count(self) -> int:
+        """Count total number of documents in the library."""
+        with self.dao.create_session() as session:
+            return session.query(LibraryFile).count()
+
     def find_latest(self, limit: int = 10) -> list[LibraryFile]:
         """Find the latest n documents ordered by creation date."""
         with self.dao.create_session() as session:

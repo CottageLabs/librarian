@@ -1,4 +1,6 @@
 import click
+from rich.console import Console
+from rich.table import Table
 from tqdm import tqdm
 
 
@@ -15,18 +17,26 @@ def librarian_ls(limit):
     from librarian.librarian import Librarian
 
     lib = Librarian()
-    files = lib.find_latest(limit)
+    total_count = lib.count()
 
-    if not files:
+    if total_count == 0:
         click.echo("No documents found in library.")
         return
 
-    click.echo(f"{'Hash ID':<16} {'File Name':<30} {'Created At'}")
-    click.echo("-" * 70)
+    files = lib.find_latest(limit)
+
+    console = Console()
+
+    table = Table(title=f"Showing latest {len(files)} documents (out of {total_count} total)")
+    table.add_column("Hash ID", style="cyan", no_wrap=True)
+    table.add_column("File Name", style="magenta")
+    table.add_column("Created At", style="green")
 
     for file in files:
         created_str = file.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        click.echo(f"{file.hash_id[:14]:<16} {file.file_name[:28]:<30} {created_str}")
+        table.add_row(file.hash_id[:14], file.file_name, created_str)
+
+    console.print(table)
 
 
 @librarian.command('drop')

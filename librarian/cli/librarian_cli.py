@@ -68,5 +68,45 @@ def librarian_rm(hash_prefix, filename):
         click.echo(f"Error: {e}")
 
 
+@librarian.command('add')
+@click.argument('path', type=click.Path(exists=True))
+@click.argument('device', type=str, default='cpu')
+def librarian_add(path, device):
+    """Add document(s) to the library"""
+    from pathlib import Path
+    from librarian.librarian import Librarian
+
+    from librarian import components
+    vector_store = components.get_vector_store(device=device)
+    lib = Librarian(vector_store=vector_store)
+    path_obj = Path(path)
+
+    if path_obj.is_file():
+        files_to_add = [path_obj]
+    else:
+        files_to_add = [f for f in path_obj.rglob('*') if f.is_file()]
+
+    if not files_to_add:
+        click.echo("No files found to add.")
+        return
+
+    added_count = 0
+    skipped_count = 0
+
+    for file_path in files_to_add:
+        try:
+            lib.add_file(file_path)
+            click.echo(f"Added: {file_path}")
+            added_count += 1
+        except ValueError as e:
+            click.echo(f"Skipped: {file_path} - {e}")
+            skipped_count += 1
+        except FileNotFoundError as e:
+            click.echo(f"Error: {e}")
+            skipped_count += 1
+
+    click.echo(f"\nSummary: {added_count} added, {skipped_count} skipped")
+
+
 if __name__ == '__main__':
     librarian()

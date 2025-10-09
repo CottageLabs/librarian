@@ -28,6 +28,7 @@ class Librarian:
         self.dao = dao or BaseDao()
 
     def add_file(self, file_path: str | Path) -> None:
+        """Add a single file to the library."""
         file_path = Path(file_path)
         print(f'Working on file: {file_path}')
 
@@ -57,6 +58,33 @@ class Librarian:
         # Add to DB
         library_file = LibraryFile(hash_id=file_hash, file_name=file_path.name)
         self.dao.add(library_file)
+
+    def add_by_path(self, path: str | Path):
+        """Add file(s) from a path (can be a file or directory).
+
+        For directories, recursively finds all files and adds them.
+
+        Yields:
+            tuple: (status, file_path, error_msg) where:
+                - status: 'added', 'skipped', or 'error'
+                - file_path: Path object
+                - error_msg: error message string if status is not 'added', None otherwise
+        """
+        path_obj = Path(path)
+
+        if path_obj.is_file():
+            file_paths = [path_obj]
+        else:
+            file_paths = [f for f in path_obj.rglob('*') if f.is_file()]
+
+        for file_path in file_paths:
+            try:
+                self.add_file(file_path)
+                yield 'added', file_path, None
+            except ValueError as e:
+                yield 'skipped', file_path, str(e)
+            except FileNotFoundError as e:
+                yield 'error', file_path, str(e)
 
     def find_all(self) -> list[LibraryFile]:
         with self.dao.create_session() as session:

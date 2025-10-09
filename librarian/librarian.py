@@ -29,6 +29,7 @@ class Librarian:
 
     def add_file(self, file_path: str | Path) -> None:
         file_path = Path(file_path)
+        print(f'Working on file: {file_path}')
 
         # Check if file exists
         if not file_path.is_file():

@@ -1,6 +1,7 @@
 """
 Tools that convert different source of text (pdf, markdown, raw text) to Document objects
 """
+import logging
 import warnings
 from pathlib import Path
 from typing import Iterable
@@ -11,6 +12,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from librarian import components
 from librarian.utils import iter_utils
+
+log = logging.getLogger(__name__)
 
 
 def create_text_splitter():
@@ -47,10 +50,21 @@ def create_docs(sources: Iterable, text_splitter=None) -> Iterable[Document]:
         raise NotImplementedError(f"other type [{_obj}] of source is not implemented yet")
 
 
+def cleanup_bad_encoding(docs: Iterable[Document]) -> Iterable[Document]:
+    for d in docs:
+        try:
+            d.page_content.encode('utf-8')
+        except UnicodeEncodeError:
+            log.warning(f"Document [{d.metadata.get('source')}][{d.metadata.get('page')}] has bad encoding")
+            d.page_content = d.page_content.encode('utf-8', errors='ignore').decode('utf-8', errors='ignore')
+        yield d
+
+
 def save_pdf_to_vectorstore(pdf_path, vectorstore=None, text_splitter=None, metadata=None):
     # Load PDF
     loader = PyPDFLoader(str(pdf_path))
     pages = loader.load()
+    pages = list(cleanup_bad_encoding(pages))
 
     print(f"Loaded {len(pages)} pages from PDF")
 
@@ -59,6 +73,12 @@ def save_pdf_to_vectorstore(pdf_path, vectorstore=None, text_splitter=None, meta
         text_splitter = create_default_text_splitter()
 
     docs = text_splitter.split_documents(pages)
+    docs = list(docs)
+
+    # Check invalid encoding
+    for d in docs:
+        if d.page_content.encode('utf-8'):
+            continue
 
     print(f"Split into {len(docs)} chunks")
 

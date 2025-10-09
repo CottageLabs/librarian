@@ -65,9 +65,9 @@ class Librarian:
         """Find the latest n documents ordered by creation date."""
         with self.dao.create_session() as session:
             return list(session.query(LibraryFile)
-                       .order_by(LibraryFile.created_at.desc())
-                       .limit(limit)
-                       .all())
+                        .order_by(LibraryFile.created_at.desc())
+                        .limit(limit)
+                        .all())
 
     def drop_vector_store(self):
         """Drop the entire vector store collection and clear database records."""
@@ -79,14 +79,22 @@ class Librarian:
             session.query(LibraryFile).delete()
             session.commit()
 
-    def remove_by_hash(self, hash_id: str) -> bool:
-        """Remove a library file by its hash ID from both vector store and database."""
+    def remove(self, hash_prefix: str = None, filename: str = None) -> bool:
+        """Remove a library file by hash prefix or filename from both vector store and database."""
         from qdrant_client import models
 
         # Check if file exists in database
         file_dao = LibraryFileDao()
-        if not file_dao.exist(hash_id):
+        files = file_dao.find(hash_prefix=hash_prefix, filename=filename)
+
+        if len(files) == 0:
             return False
+
+        if len(files) > 1:
+            raise ValueError(f"Found {len(files)} matching files. Please provide more specific criteria.")
+
+        file_to_remove = files[0]
+        hash_id = file_to_remove.hash_id
 
         # Delete from vector store using metadata filter
         client = self.vector_store.client

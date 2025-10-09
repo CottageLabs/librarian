@@ -45,18 +45,27 @@ def librarian_drop(force):
 
 
 @librarian.command('rm')
-@click.argument('hash_id')
-def librarian_rm(hash_id):
-    """Remove document by hash key"""
+@click.option('--hash-prefix', '-h', default=None, help='Hash prefix to match')
+@click.option('--filename', '-f', default=None, help='Filename to match (partial)')
+def librarian_rm(hash_prefix, filename):
+    """Remove document by hash prefix or filename"""
     from librarian.librarian import Librarian
 
-    lib = Librarian()
-    success = lib.remove_by_hash(hash_id)
+    if not hash_prefix and not filename:
+        click.echo("Error: Must provide either --hash-prefix or --filename")
+        return
 
-    if success:
-        click.echo(f"Document with hash {hash_id} has been removed.")
-    else:
-        click.echo(f"Document with hash {hash_id} not found.")
+    lib = Librarian()
+
+    try:
+        success = lib.remove(hash_prefix=hash_prefix, filename=filename)
+
+        if success:
+            click.echo("Document has been removed.")
+        else:
+            click.echo("No matching document found.")
+    except ValueError as e:
+        click.echo(f"Error: {e}")
 
 
 if __name__ == '__main__':

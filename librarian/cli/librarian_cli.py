@@ -1,4 +1,5 @@
 import click
+from tqdm import tqdm
 
 
 @click.group()
@@ -93,7 +94,7 @@ def librarian_add(path, device):
     added_count = 0
     skipped_count = 0
 
-    for file_path in files_to_add:
+    for file_path in tqdm(files_to_add, desc="Adding files", unit="file"):
         try:
             lib.add_file(file_path)
             click.echo(f"Added: {file_path}")

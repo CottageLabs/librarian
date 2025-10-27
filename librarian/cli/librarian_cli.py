@@ -90,22 +90,23 @@ def librarian_add(path, device):
     vector_store = components.get_vector_store(device=device)
     lib = Librarian(vector_store=vector_store)
 
+    console = Console()
     added_count = 0
     skipped_count = 0
 
     results = lib.add_by_path(path)
     for status, file_path, error in tqdm(results, desc="Adding files", unit="file"):
         if status == 'added':
-            click.echo(f"Added: {file_path}")
+            console.print(f"[green]✓[/green] Added: [cyan]{file_path}[/cyan]")
             added_count += 1
         else:
-            click.echo(f"Skipped: {file_path} - {error}")
+            console.print(f"[yellow]⊘[/yellow] Skipped: [dim]{file_path}[/dim] - [red]{error}[/red]")
             skipped_count += 1
 
     if added_count == 0 and skipped_count == 0:
-        click.echo("No files found to add.")
+        console.print("[blue]ℹ[/blue] No files found to add.")
     else:
-        click.echo(f"\nSummary: {added_count} added, {skipped_count} skipped")
+        console.print(f"\n[bold]Summary:[/bold] [green]{added_count}[/green] added, [yellow]{skipped_count}[/yellow] skipped")
 
 
 if __name__ == '__main__':

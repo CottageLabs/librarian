@@ -1,6 +1,8 @@
 import hashlib
 from pathlib import Path
 
+from unstructured.errors import UnprocessableEntityError
+
 from librarian import components
 from librarian import text_processing
 from librarian.constants import MAX_FILE_SIZE_BYTES
@@ -83,7 +85,9 @@ class Librarian:
                 yield 'added', file_path, None
             except ValueError as e:
                 yield 'skipped', file_path, str(e)
-            except FileNotFoundError as e:
+            except (
+                    FileNotFoundError, UnprocessableEntityError, RuntimeError,
+            ) as e:
                 yield 'error', file_path, str(e)
 
     def find_all(self) -> list[LibraryFile]:
@@ -166,8 +170,6 @@ def main__add_test_file():
     files = librarian.find_all()
     for f in files:
         print(f"{f.hash_id}, {f.file_name}, {f.created_at}")
-
-
 
 
 if __name__ == '__main__':

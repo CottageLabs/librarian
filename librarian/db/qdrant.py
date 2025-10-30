@@ -5,14 +5,21 @@ from qdrant_client.http.models import Distance, VectorParams
 from librarian.constants import DEFAULT_COLLECTION_NAME
 from librarian.cpaths import QDRANT_DATA_PATH
 from librarian.embedding import get_embedding
+import logging
+
+log = logging.getLogger(__name__)
 
 
-def get_client(location=None, **kwargs):
+def get_client(location=None, path=None, **kwargs):
     final_kwargs = {}
-    if location is None:
-        final_kwargs['path'] = QDRANT_DATA_PATH
-    else:
+    if path is not None:
+        final_kwargs['path'] = path
+    elif location is not None:
         final_kwargs['location'] = location
+    else:
+        log.info(f"Using default Qdrant data path at {QDRANT_DATA_PATH}")
+        final_kwargs['path'] = QDRANT_DATA_PATH
+
     final_kwargs |= kwargs
     qdrant = QdrantClient(**final_kwargs)
     return qdrant

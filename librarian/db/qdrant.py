@@ -1,11 +1,11 @@
+import logging
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
 
-from librarian.constants import DEFAULT_COLLECTION_NAME
-from librarian.envvars import get_qdrant_data_path
 from librarian.embedding import get_embedding
-import logging
+from librarian.envvars import get_qdrant_data_path
+from librarian.librarian_config import get_collection_name
 
 log = logging.getLogger(__name__)
 
@@ -26,10 +26,13 @@ def get_client(location=None, path=None, **kwargs):
     return qdrant
 
 
-def get_vector_store(client=None, collection_name=DEFAULT_COLLECTION_NAME, device='cpu'):
+def get_vector_store(client=None, collection_name=None, device='cpu'):
     # KTODO use device on all caller
     if client is None:
         client = get_client()
+
+    if collection_name is None:
+        collection_name = get_collection_name()
 
     embedding = get_embedding(device=device)
     init_collection(embedding._client.get_sentence_embedding_dimension(),
@@ -46,10 +49,13 @@ def get_vector_store(client=None, collection_name=DEFAULT_COLLECTION_NAME, devic
 def init_collection(
         embedding_size,
         client=None,
-        collection_name=DEFAULT_COLLECTION_NAME,
+        collection_name=None,
 ):
     if client is None:
         client = get_client()
+
+    if collection_name is None:
+        collection_name = get_collection_name()
 
     # Create the collection if it doesn't exist
     if not client.collection_exists(collection_name):

@@ -21,7 +21,7 @@ def store_status():
     """Show library status including Qdrant path, collection name, and records"""
     from librarian.librarian import Librarian
     from librarian.envvars import get_qdrant_data_path
-    from librarian.constants import DEFAULT_COLLECTION_NAME
+    from librarian.librarian_config import get_collection_name
 
     lib = Librarian()
     client = lib.vector_store.client
@@ -31,7 +31,7 @@ def store_status():
     qdrant_path = get_qdrant_data_path()
     config_table = Table(title="Qdrant Configuration", show_header=False, box=None)
     config_table.add_row("Qdrant Path", str(qdrant_path))
-    config_table.add_row("Default Collection", DEFAULT_COLLECTION_NAME)
+    config_table.add_row("Collection Name", get_collection_name())
     console.print(config_table)
 
     console.print("\n[bold]Collections:[/bold]")

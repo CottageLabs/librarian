@@ -51,6 +51,22 @@ def store_status():
         console.print(table)
 
 
+@store.command('set-collection')
+@click.argument('name', type=str)
+def store_set_collection(name):
+    """Persist a collection name for future store operations."""
+    from librarian.librarian_config import get_collection_name, save_collection_name
+
+    previous = get_collection_name()
+    save_collection_name(name)
+    updated = get_collection_name()
+
+    if updated == previous:
+        click.echo(f"Collection name remains '{updated}'.")
+    else:
+        click.echo(f"Collection name updated to '{updated}'.")
+
+
 @librarian.command('ls')
 @click.option('--limit', '-n', default=10, help='Number of latest documents to show')
 def librarian_ls(limit):

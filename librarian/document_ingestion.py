@@ -140,13 +140,29 @@ def save_markdown(md_path, vectorstore=None, text_splitter=None, metadata=None):
     return finalize_and_save_docs(docs, vectorstore, metadata)
 
 
-def save_any(file_path, vectorstore=None, text_splitter=None, metadata=None):
-    file_path = Path(file_path)
-    if not file_path.is_file():
-        raise FileNotFoundError(f"File not found: {file_path}")
-
-    suffix = file_path.suffix.lower()
+def save_any(path, vectorstore=None, text_splitter=None, metadata=None):
+    path = Path(path)
     suffix_map = get_suffix_saver_map()
+
+    if path.is_dir():
+        docs: list[Document] = []
+        for file in sorted(p for p in path.rglob('*') if p.is_file()):
+            if file.suffix.lower() not in suffix_map:
+                continue
+            docs.extend(
+                save_any(
+                    file,
+                    vectorstore=vectorstore,
+                    text_splitter=text_splitter,
+                    metadata=metadata,
+                ),
+            )
+        return docs
+
+    if not path.is_file():
+        raise FileNotFoundError(f"File not found: {path}")
+
+    suffix = path.suffix.lower()
     saver_fn = suffix_map.get(suffix)
 
     if saver_fn is None:
@@ -157,7 +173,7 @@ def save_any(file_path, vectorstore=None, text_splitter=None, metadata=None):
         saver_fn = save_text
 
     return saver_fn(
-        file_path,
+        path,
         vectorstore=vectorstore,
         text_splitter=text_splitter,
         metadata=metadata,

@@ -58,7 +58,15 @@ class Librarian:
                                                 metadata={"hash_id": file_hash})
 
         # Add to DB
-        library_file = LibraryFile(hash_id=file_hash, file_name=file_path.name)
+        collection_name = getattr(self.vector_store, "collection_name", None)
+        if not collection_name:
+            raise ValueError("Vector store must expose a collection_name when adding files.")
+
+        library_file = LibraryFile(
+            hash_id=file_hash,
+            file_name=file_path.name,
+            collection_name=collection_name,
+        )
         self.dao.add(library_file)
 
     def add_by_path(self, path: str | Path):
@@ -136,7 +144,7 @@ class Librarian:
 
         # Delete from vector store using metadata filter
         client = self.vector_store.client
-        collection_name = self.vector_store.collection_name
+        collection_name = file_to_remove.collection_name
 
         # Create filter for hash_id
         filter_condition = models.Filter(

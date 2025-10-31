@@ -57,7 +57,7 @@ class Librarian:
             raise ValueError(f"File with hash {file_hash} already exists in library")
 
         # Add to Vector Store
-        document_ingestion.save_any_to_vectorstore(
+        document_ingestion.save_any(
             file_path,
             vectorstore=self.vector_store,
             metadata={"hash_id": file_hash},

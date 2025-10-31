@@ -53,7 +53,7 @@ def finalize_and_save_docs(
     return docs
 
 
-def save_pdf_to_vectorstore(pdf_path, vectorstore=None, text_splitter=None, metadata=None):
+def save_pdf(pdf_path, vectorstore=None, text_splitter=None, metadata=None):
     loader = PyPDFLoader(str(pdf_path))
     pages = loader.load()
     pages = list(cleanup_bad_encoding(pages))
@@ -69,7 +69,7 @@ def save_pdf_to_vectorstore(pdf_path, vectorstore=None, text_splitter=None, meta
     return finalize_and_save_docs(docs, vectorstore, metadata)
 
 
-def save_text_to_vectorstore(file_path, vectorstore=None, text_splitter=None, metadata=None):
+def save_text(file_path, vectorstore=None, text_splitter=None, metadata=None):
     file_path = Path(file_path)
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
@@ -89,7 +89,7 @@ def save_text_to_vectorstore(file_path, vectorstore=None, text_splitter=None, me
     return finalize_and_save_docs(docs, vectorstore, metadata)
 
 
-def save_epub_to_vectorstore(epub_path, vectorstore=None, text_splitter=None, metadata=None):
+def save_epub(epub_path, vectorstore=None, text_splitter=None, metadata=None):
     loader = UnstructuredEPubLoader(Path(epub_path))
     try:
         pages = loader.load()
@@ -113,7 +113,7 @@ def save_epub_to_vectorstore(epub_path, vectorstore=None, text_splitter=None, me
     return finalize_and_save_docs(docs, vectorstore, metadata)
 
 
-def save_markdown_to_vectorstore(md_path, vectorstore=None, text_splitter=None, metadata=None):
+def save_markdown(md_path, vectorstore=None, text_splitter=None, metadata=None):
     loader = UnstructuredMarkdownLoader(str(md_path))
     pages = loader.load()
     pages = list(cleanup_bad_encoding(pages))
@@ -140,7 +140,7 @@ def save_markdown_to_vectorstore(md_path, vectorstore=None, text_splitter=None, 
     return finalize_and_save_docs(docs, vectorstore, metadata)
 
 
-def save_any_to_vectorstore(file_path, vectorstore=None, text_splitter=None, metadata=None):
+def save_any(file_path, vectorstore=None, text_splitter=None, metadata=None):
     file_path = Path(file_path)
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
@@ -154,7 +154,7 @@ def save_any_to_vectorstore(file_path, vectorstore=None, text_splitter=None, met
             warnings.warn(
                 f"File suffix [{suffix}] is not explicitly supported, treat it as raw text file",
             )
-        saver_fn = save_text_to_vectorstore
+        saver_fn = save_text
 
     return saver_fn(
         file_path,
@@ -179,8 +179,8 @@ def inject_metadata(docs: Iterable[Document], metadata: dict = None) -> Iterable
 def get_suffix_saver_map():
     """Return mapping of file suffix to the corresponding save function."""
     return {
-        ".pdf": save_pdf_to_vectorstore,
-        ".epub": save_epub_to_vectorstore,
-        ".md": save_markdown_to_vectorstore,
-        ".txt": save_text_to_vectorstore,
+        ".pdf": save_pdf,
+        ".epub": save_epub,
+        ".md": save_markdown,
+        ".txt": save_text,
     }

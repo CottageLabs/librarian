@@ -10,6 +10,40 @@ def librarian():
     pass
 
 
+@librarian.command('status')
+def librarian_status():
+    """Show library status including Qdrant path, collection name, and records"""
+    from librarian.librarian import Librarian
+    from librarian.envvars import get_qdrant_data_path
+    from librarian.constants import DEFAULT_COLLECTION_NAME
+
+    lib = Librarian()
+    client = lib.vector_store.client
+
+    console = Console()
+
+    qdrant_path = get_qdrant_data_path()
+    console.print(f"[bold]Qdrant Path:[/bold] {qdrant_path}")
+
+    console.print(f"[bold]Default Collection Name:[/bold] {DEFAULT_COLLECTION_NAME}")
+
+    console.print("\n[bold]Collections:[/bold]")
+    collections = client.get_collections()
+
+    if not collections.collections:
+        console.print("[dim]No collections found[/dim]")
+    else:
+        table = Table()
+        table.add_column("Collection Name", style="cyan")
+        table.add_column("Points Count", style="magenta", justify="right")
+
+        for collection in collections.collections:
+            collection_info = client.get_collection(collection.name)
+            table.add_row(collection.name, str(collection_info.points_count))
+
+        console.print(table)
+
+
 @librarian.command('ls')
 @click.option('--limit', '-n', default=10, help='Number of latest documents to show')
 def librarian_ls(limit):

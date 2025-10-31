@@ -47,9 +47,13 @@ class Librarian:
         file_hash = calculate_file_hash(file_path)
         print(f"File hash: {file_hash}")
 
+        collection_name = getattr(self.vector_store, "collection_name", None)
+        if not collection_name:
+            raise ValueError("Vector store must expose a collection_name when adding files.")
+
         # Check hash existence in DB
         file_dao = LibraryFileDao()
-        if file_dao.exist(file_hash):
+        if file_dao.exist(file_hash, collection_name=collection_name):
             raise ValueError(f"File with hash {file_hash} already exists in library")
 
         # Add to Vector Store
@@ -58,10 +62,6 @@ class Librarian:
                                                 metadata={"hash_id": file_hash})
 
         # Add to DB
-        collection_name = getattr(self.vector_store, "collection_name", None)
-        if not collection_name:
-            raise ValueError("Vector store must expose a collection_name when adding files.")
-
         library_file = LibraryFile(
             hash_id=file_hash,
             file_name=file_path.name,
@@ -131,7 +131,13 @@ class Librarian:
 
         # Check if file exists in database
         file_dao = LibraryFileDao()
-        files = file_dao.find(hash_prefix=hash_prefix, filename=filename)
+        collection_name = self.vector_store.collection_name
+
+        files = file_dao.find(
+            hash_prefix=hash_prefix,
+            filename=filename,
+            collection_name=collection_name,
+        )
 
         if len(files) == 0:
             return False

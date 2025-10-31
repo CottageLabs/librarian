@@ -147,18 +147,17 @@ def save_any_to_vectorstore(file_path, vectorstore=None, text_splitter=None, met
         raise FileNotFoundError(f"File not found: {file_path}")
 
     suffix = file_path.suffix.lower()
-    if suffix == ".pdf":
-        return save_pdf_to_vectorstore(file_path, vectorstore, text_splitter, metadata)
-    if suffix == ".epub":
-        return save_epub_to_vectorstore(file_path, vectorstore, text_splitter, metadata)
-    if suffix == ".md":
-        return save_markdown_to_vectorstore(file_path, vectorstore, text_splitter, metadata)
+    suffix_map = get_suffix_saver_map()
+    saver_fn = suffix_map.get(suffix)
 
-    if suffix != ".txt":
-        warnings.warn(
-            f"File suffix [{suffix}] is not explicitly supported, treat it as raw text file",
-        )
-    return save_text_to_vectorstore(
+    if saver_fn is None:
+        if suffix != ".txt":
+            warnings.warn(
+                f"File suffix [{suffix}] is not explicitly supported, treat it as raw text file",
+            )
+        saver_fn = save_text_to_vectorstore
+
+    return saver_fn(
         file_path,
         vectorstore=vectorstore,
         text_splitter=text_splitter,
@@ -176,3 +175,13 @@ def inject_metadata(docs: Iterable[Document], metadata: dict = None) -> Iterable
             new_metadata.update(metadata)
             doc.metadata = new_metadata
         yield doc
+
+
+def get_suffix_saver_map():
+    """Return mapping of file suffix to the corresponding save function."""
+    return {
+        ".pdf": save_pdf_to_vectorstore,
+        ".epub": save_epub_to_vectorstore,
+        ".md": save_markdown_to_vectorstore,
+        ".txt": save_text_to_vectorstore,
+    }

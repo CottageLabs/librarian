@@ -90,7 +90,6 @@ def save_text_to_vectorstore(file_path, vectorstore=None, text_splitter=None, me
 
 
 def save_epub_to_vectorstore(epub_path, vectorstore=None, text_splitter=None, metadata=None):
-    print(f"debugggggg {epub_path}")
     loader = UnstructuredEPubLoader(Path(epub_path))
     try:
         pages = loader.load()

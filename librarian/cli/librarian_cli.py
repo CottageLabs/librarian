@@ -23,9 +23,10 @@ def librarian_status():
     console = Console()
 
     qdrant_path = get_qdrant_data_path()
-    console.print(f"[bold]Qdrant Path:[/bold] {qdrant_path}")
-
-    console.print(f"[bold]Default Collection Name:[/bold] {DEFAULT_COLLECTION_NAME}")
+    config_table = Table(title="Qdrant Configuration", show_header=False, box=None)
+    config_table.add_row("Qdrant Path", str(qdrant_path))
+    config_table.add_row("Default Collection", DEFAULT_COLLECTION_NAME)
+    console.print(config_table)
 
     console.print("\n[bold]Collections:[/bold]")
     collections = client.get_collections()

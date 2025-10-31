@@ -10,8 +10,14 @@ def librarian():
     pass
 
 
-@librarian.command('status')
-def librarian_status():
+@librarian.group()
+def store():
+    """Manage the vector store"""
+    pass
+
+
+@store.command('status')
+def store_status():
     """Show library status including Qdrant path, collection name, and records"""
     from librarian.librarian import Librarian
     from librarian.envvars import get_qdrant_data_path

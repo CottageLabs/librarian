@@ -4,7 +4,7 @@ from pathlib import Path
 from unstructured.errors import UnprocessableEntityError
 
 from librarian import components
-from librarian import text_processing
+from librarian import document_ingestion
 from librarian.constants import MAX_FILE_SIZE_BYTES
 from librarian.dao.base_dao import BaseDao
 from librarian.dao.library_file_dao import LibraryFileDao
@@ -57,9 +57,11 @@ class Librarian:
             raise ValueError(f"File with hash {file_hash} already exists in library")
 
         # Add to Vector Store
-        text_processing.save_any_to_vectorstore(file_path,
-                                                vectorstore=self.vector_store,
-                                                metadata={"hash_id": file_hash})
+        document_ingestion.save_any_to_vectorstore(
+            file_path,
+            vectorstore=self.vector_store,
+            metadata={"hash_id": file_hash},
+        )
 
         # Add to DB
         library_file = LibraryFile(

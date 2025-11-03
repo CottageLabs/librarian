@@ -55,7 +55,7 @@ class Librarian:
 
         # Check hash existence in DB
         file_dao = LibraryFileDao(collection_name=self.collection_name)
-        if file_dao.exist(file_hash, collection_name=self.collection_name):
+        if file_dao.exist(file_hash):
             raise ValueError(f"File with hash {file_hash} already exists in library")
 
         # Add to Vector Store
@@ -69,7 +69,6 @@ class Librarian:
         library_file = LibraryFile(
             hash_id=file_hash,
             file_name=file_path.name,
-            collection_name=self.collection_name,
         )
         file_dao.add(library_file)
 
@@ -140,7 +139,6 @@ class Librarian:
         files = file_dao.find(
             hash_prefix=hash_prefix,
             filename=filename,
-            collection_name=self.collection_name,
         )
 
         if len(files) == 0:

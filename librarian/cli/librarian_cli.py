@@ -51,7 +51,7 @@ def store_status():
         console.print(table)
 
 
-@store.command('set-collection')
+@store.command('switch')
 @click.argument('name', type=str)
 def store_set_collection(name):
     """Persist a collection name for future store operations."""
@@ -62,9 +62,9 @@ def store_set_collection(name):
     updated = get_collection_name()
 
     if updated == previous:
-        click.echo(f"Collection name remains '{updated}'.")
+        click.echo(f"Collection remains '{updated}'.")
     else:
-        click.echo(f"Collection name updated to '{updated}'.")
+        click.echo(f"Collection updated to '{updated}'.")
 
 
 @librarian.command('ls')

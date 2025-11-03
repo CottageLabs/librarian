@@ -106,13 +106,11 @@ class Librarian:
                 yield 'error', file_path, str(e)
 
     def find_all(self) -> list[LibraryFile]:
-        with BaseDao(collection_name=self.collection_name).create_session() as session:
-            return list(session.query(LibraryFile).all())
+        return LibraryFileDao(collection_name=self.collection_name).find_all()
 
     def count(self) -> int:
         """Count total number of documents in the library."""
-        with BaseDao(collection_name=self.collection_name).create_session() as session:
-            return session.query(LibraryFile).count()
+        return LibraryFileDao(collection_name=self.collection_name).count()
 
     def find_latest(self, limit: int = 10) -> list[LibraryFile]:
         """Find the latest n documents ordered by creation date."""

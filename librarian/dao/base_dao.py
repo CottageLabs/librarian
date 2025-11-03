@@ -17,6 +17,10 @@ class BaseDao:
     def create_session(self):
         return Session(self.engine)
 
+    @property
+    def model_class(self):
+        raise NotImplementedError("Subclasses must implement model_class property")
+
     def add(self, obj):
         with Session(self.engine) as s:
             s.add(obj)
@@ -29,3 +33,11 @@ class BaseDao:
             stmt = select(exists().where(*clause))
             is_exist = s.execute(stmt).scalar()
             return is_exist
+
+    def find_all(self):
+        with self.create_session() as session:
+            return list(session.query(self.model_class).all())
+
+    def count(self) -> int:
+        with self.create_session() as session:
+            return session.query(self.model_class).count()

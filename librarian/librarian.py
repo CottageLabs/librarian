@@ -1,6 +1,7 @@
 import hashlib
 from pathlib import Path
 
+import tqdm
 from unstructured.errors import UnprocessableEntityError
 
 from librarian import components
@@ -9,6 +10,7 @@ from librarian.constants import MAX_FILE_SIZE_BYTES
 from librarian.dao.base_dao import BaseDao
 from librarian.dao.library_file_dao import LibraryFileDao
 from librarian.dao.schema.dao_schema import LibraryFile
+from librarian.librarian_config import get_collection_name
 from librarian.vector_store_service import VectorStoreService
 
 
@@ -25,9 +27,13 @@ class Librarian:
     - avoid duplicate files by hash
     """
 
-    def __init__(self, vector_store=None, dao=None):
+    def __init__(self, vector_store=None):
         self.vector_store = vector_store or components.get_vector_store()
-        self.dao = dao or BaseDao()
+
+    @property
+    def collection_name(self) -> str:
+        """Get collection name from vector store or default config."""
+        return getattr(self.vector_store, "collection_name", None) or get_collection_name()
 
     def add_file(self, file_path: str | Path) -> None:
         """Add a single file to the library."""
@@ -47,13 +53,9 @@ class Librarian:
         file_hash = calculate_file_hash(file_path)
         print(f"File hash: {file_hash}")
 
-        collection_name = getattr(self.vector_store, "collection_name", None)
-        if not collection_name:
-            raise ValueError("Vector store must expose a collection_name when adding files.")
-
         # Check hash existence in DB
-        file_dao = LibraryFileDao()
-        if file_dao.exist(file_hash, collection_name=collection_name):
+        file_dao = LibraryFileDao(collection_name=self.collection_name)
+        if file_dao.exist(file_hash, collection_name=self.collection_name):
             raise ValueError(f"File with hash {file_hash} already exists in library")
 
         # Add to Vector Store
@@ -67,9 +69,9 @@ class Librarian:
         library_file = LibraryFile(
             hash_id=file_hash,
             file_name=file_path.name,
-            collection_name=collection_name,
+            collection_name=self.collection_name,
         )
-        self.dao.add(library_file)
+        file_dao.add(library_file)
 
     def add_by_path(self, path: str | Path):
         """Add file(s) from a path (can be a file or directory).
@@ -89,6 +91,9 @@ class Librarian:
         else:
             file_paths = [f for f in path_obj.rglob('*') if f.is_file()]
 
+        if len(file_paths) > 1:
+            file_paths = tqdm.tqdm(file_paths, desc="Adding files", unit="file", leave=True)
+
         for file_path in file_paths:
             try:
                 self.add_file(file_path)
@@ -101,17 +106,17 @@ class Librarian:
                 yield 'error', file_path, str(e)
 
     def find_all(self) -> list[LibraryFile]:
-        with self.dao.create_session() as session:
+        with BaseDao(collection_name=self.collection_name).create_session() as session:
             return list(session.query(LibraryFile).all())
 
     def count(self) -> int:
         """Count total number of documents in the library."""
-        with self.dao.create_session() as session:
+        with BaseDao(collection_name=self.collection_name).create_session() as session:
             return session.query(LibraryFile).count()
 
     def find_latest(self, limit: int = 10) -> list[LibraryFile]:
         """Find the latest n documents ordered by creation date."""
-        with self.dao.create_session() as session:
+        with BaseDao(collection_name=self.collection_name).create_session() as session:
             return list(session.query(LibraryFile)
                         .order_by(LibraryFile.created_at.desc())
                         .limit(limit)
@@ -123,7 +128,7 @@ class Librarian:
         vector_service.delete_collection()
 
         # Clear all library file records from database
-        with self.dao.create_session() as session:
+        with BaseDao(collection_name=self.collection_name).create_session() as session:
             session.query(LibraryFile).delete()
             session.commit()
 
@@ -132,13 +137,12 @@ class Librarian:
         from qdrant_client import models
 
         # Check if file exists in database
-        file_dao = LibraryFileDao()
-        collection_name = self.vector_store.collection_name
+        file_dao = LibraryFileDao(collection_name=self.collection_name)
 
         files = file_dao.find(
             hash_prefix=hash_prefix,
             filename=filename,
-            collection_name=collection_name,
+            collection_name=self.collection_name,
         )
 
         if len(files) == 0:
@@ -152,7 +156,6 @@ class Librarian:
 
         # Delete from vector store using metadata filter
         client = self.vector_store.client
-        collection_name = file_to_remove.collection_name
 
         # Create filter for hash_id
         filter_condition = models.Filter(
@@ -166,12 +169,12 @@ class Librarian:
 
         # Delete from vector store
         client.delete(
-            collection_name=collection_name,
+            collection_name=self.collection_name,
             points_selector=models.FilterSelector(filter=filter_condition)
         )
 
         # Delete from database
-        with self.dao.create_session() as session:
+        with BaseDao(collection_name=self.collection_name).create_session() as session:
             session.query(LibraryFile).filter(LibraryFile.hash_id == hash_id).delete()
             session.commit()
 

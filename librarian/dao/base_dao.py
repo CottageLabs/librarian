@@ -6,10 +6,10 @@ from librarian.dao.schema.dao_schema import Base
 
 class BaseDao:
 
-    def __init__(self, url=None):
+    def __init__(self, url=None, collection_name='default', ):
         if url is None:
             from librarian import cpaths
-            url = f"sqlite:///{cpaths.DB_SQLITE_PATH}"
+            url = f"sqlite:///{cpaths.DB_SQLITE_PATH}-{collection_name}"
 
         self.engine = create_engine(url, echo=False, future=True)
         Base.metadata.create_all(self.engine)

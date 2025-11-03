@@ -46,11 +46,13 @@ def main():
         s.commit()
         # s.refresh(lib_file)
 
-        print(f"Created LibraryFile: {lib_file.hash_id}, {lib_file.file_name}, {lib_file.collection_name}, {lib_file.created_at}")
+        print(f"Created LibraryFile: {lib_file.hash_id}, {lib_file.file_name},"
+              f" {lib_file.collection_name}, {lib_file.created_at}")
 
         # Query the file
         queried_file = s.get(LibraryFile, "test123")
-        print(f"Queried LibraryFile: {queried_file.hash_id}, {queried_file.file_name}, {queried_file.collection_name}, {queried_file.created_at}")
+        print(f"Queried LibraryFile: {queried_file.hash_id}, {queried_file.file_name},"
+              f" {queried_file.collection_name}, {queried_file.created_at}")
 
 
 def main2():
@@ -64,12 +66,14 @@ def main2():
     lib_file = LibraryFile(hash_id="test456", file_name="example2.txt", collection_name="demo_collection")
     created_file = dao.add(lib_file)
 
-    print(f"Created LibraryFile: {created_file.hash_id}, {created_file.file_name}, {created_file.collection_name}, {created_file.created_at}")
+    print(f"Created LibraryFile: {created_file.hash_id}, {created_file.file_name},"
+          f" {created_file.collection_name}, {created_file.created_at}")
 
     # Query the file using DAO's create_session method
     with dao.create_session() as s:
         queried_file = s.get(LibraryFile, "test456")
-        print(f"Queried LibraryFile: {queried_file.hash_id}, {queried_file.file_name}, {queried_file.collection_name}, {queried_file.created_at}")
+        print(f"Queried LibraryFile: {queried_file.hash_id}, {queried_file.file_name},"
+              f" {queried_file.collection_name}, {queried_file.created_at}")
 
 
 if __name__ == '__main__':

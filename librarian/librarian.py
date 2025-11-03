@@ -125,9 +125,7 @@ class Librarian:
         vector_service.delete_collection()
 
         # Clear all library file records from database
-        with BaseDao(collection_name=self.collection_name).create_session() as session:
-            session.query(LibraryFile).delete()
-            session.commit()
+        LibraryFileDao(collection_name=self.collection_name).delete()
 
     def remove(self, hash_prefix: str = None, filename: str = None) -> bool:
         """Remove a library file by hash prefix or filename from both vector store and database."""
@@ -170,9 +168,7 @@ class Librarian:
         )
 
         # Delete from database
-        with BaseDao(collection_name=self.collection_name).create_session() as session:
-            session.query(LibraryFile).filter(LibraryFile.hash_id == hash_id).delete()
-            session.commit()
+        LibraryFileDao(collection_name=self.collection_name).delete(LibraryFile.hash_id == hash_id)
 
         return True
 

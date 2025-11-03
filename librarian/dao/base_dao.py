@@ -41,3 +41,11 @@ class BaseDao:
     def count(self) -> int:
         with self.create_session() as session:
             return session.query(self.model_class).count()
+
+    def delete(self, *clause):
+        with self.create_session() as session:
+            query = session.query(self.model_class)
+            if clause:
+                query = query.filter(*clause)
+            query.delete()
+            session.commit()

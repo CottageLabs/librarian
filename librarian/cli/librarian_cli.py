@@ -95,13 +95,14 @@ def librarian_ls(limit):
 def librarian_drop(force):
     """Remove entire vector store directory and database records"""
     from librarian.librarian import Librarian
+    lib = Librarian()
 
     if not force:
-        if not click.confirm('This will delete ALL documents from the library. Continue?'):
+        if not click.confirm(f'This will delete ALL documents from the library'
+                             f' (collection: {lib.collection_name}). Continue?'):
             click.echo("Operation cancelled.")
             return
 
-    lib = Librarian()
     lib.drop_vector_store()
     click.echo("Vector store and library records have been cleared.")
 
@@ -157,7 +158,8 @@ def librarian_add(path, device):
     if added_count == 0 and skipped_count == 0:
         console.print("[blue]ℹ[/blue] No files found to add.")
     else:
-        console.print(f"\n[bold]Summary:[/bold] [green]{added_count}[/green] added, [yellow]{skipped_count}[/yellow] skipped")
+        console.print(f"\n[bold]Summary:[/bold] [green]{added_count}[/green] added,"
+                      f" [yellow]{skipped_count}[/yellow] skipped")
 
 
 if __name__ == '__main__':

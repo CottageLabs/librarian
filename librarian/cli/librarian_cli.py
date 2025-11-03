@@ -95,6 +95,8 @@ def librarian_ls(limit):
 def librarian_drop(force):
     """Remove entire vector store directory and database records"""
     from librarian.librarian import Librarian
+    from librarian.librarian_config import save_collection_name
+    from librarian.constants import DEFAULT_COLLECTION_NAME
     lib = Librarian()
 
     if not force:
@@ -104,6 +106,8 @@ def librarian_drop(force):
             return
 
     lib.drop_vector_store()
+
+    save_collection_name(DEFAULT_COLLECTION_NAME)
     click.echo("Vector store and library records have been cleared.")
 
 

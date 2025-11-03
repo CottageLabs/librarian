@@ -10,14 +10,8 @@ def librarian():
     pass
 
 
-@librarian.group()
-def store():
-    """Manage the vector store"""
-    pass
-
-
-@store.command('status')
-def store_status():
+@librarian.command('status')
+def librarian_status():
     """Show library status including Qdrant path, collection name, and records"""
     from librarian.librarian import Librarian
     from librarian.envvars import get_qdrant_data_path
@@ -51,9 +45,9 @@ def store_status():
         console.print(table)
 
 
-@store.command('switch')
+@librarian.command('checkout')
 @click.argument('name', type=str)
-def store_set_collection(name):
+def librarian_checkout(name):
     """Persist a collection name for future store operations."""
     from librarian.librarian_config import get_collection_name, save_collection_name
 

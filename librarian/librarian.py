@@ -1,4 +1,6 @@
 import hashlib
+import shutil
+import subprocess
 from pathlib import Path
 
 import tqdm
@@ -7,6 +9,7 @@ from unstructured.errors import UnprocessableEntityError
 from librarian import components
 from librarian import document_ingestion
 from librarian.constants import MAX_FILE_SIZE_BYTES
+from librarian.cpaths import GITREPO_DIR
 from librarian.dao.base_dao import BaseDao
 from librarian.dao.library_file_dao import LibraryFileDao
 from librarian.dao.schema.dao_schema import LibraryFile
@@ -18,6 +21,44 @@ def calculate_file_hash(file_path: Path) -> str:
     """Calculate SHA256 hash of a file."""
     with open(file_path, 'rb') as f:
         return hashlib.sha256(f.read()).hexdigest()
+
+
+def clone_git_repo(git_url: str) -> Path:
+    """Clone a git repository to PROJ_HOME/gitrepo directory.
+
+    Args:
+        git_url: Git repository URL (must end with .git)
+
+    Returns:
+        Path to the cloned repository
+
+    Raises:
+        RuntimeError: If git command is not found or cloning fails
+    """
+    if not shutil.which('git'):
+        raise RuntimeError("git command not found in system")
+
+    GITREPO_DIR.mkdir(parents=True, exist_ok=True)
+
+    repo_name = git_url.rstrip('/').split('/')[-1].replace('.git', '')
+    target_path = GITREPO_DIR / repo_name
+
+    if target_path.exists():
+        print(f"Repository already exists at: {target_path}")
+        return target_path
+
+    print(f"Cloning {git_url} to {target_path}")
+    result = subprocess.run(
+        ['git', 'clone', git_url, str(target_path)],
+        capture_output=True,
+        text=True
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(f"Failed to clone repository: {result.stderr}")
+
+    print(f"Successfully cloned to: {target_path}")
+    return target_path
 
 
 class Librarian:
@@ -76,6 +117,7 @@ class Librarian:
         """Add file(s) from a path (can be a file or directory).
 
         For directories, recursively finds all files and adds them.
+        If path ends with .git and doesn't exist locally, clones the git repository.
 
         Yields:
             tuple: (status, file_path, error_msg) where:
@@ -83,26 +125,45 @@ class Librarian:
                 - file_path: Path object
                 - error_msg: error message string if status is not 'added', None otherwise
         """
+        path_str = str(path)
         path_obj = Path(path)
+        cloned_from_git = False
 
-        if path_obj.is_file():
-            file_paths = [path_obj]
-        else:
-            file_paths = [f for f in path_obj.rglob('*') if f.is_file()]
-
-        if len(file_paths) > 1:
-            file_paths = tqdm.tqdm(file_paths, desc="Adding files", unit="file", leave=True)
-
-        for file_path in file_paths:
+        # Check if it's a git URL that needs to be cloned
+        if path_str.endswith('.git') and not path_obj.exists():
             try:
-                self.add_file(file_path)
-                yield 'added', file_path, None
-            except ValueError as e:
-                yield 'skipped', file_path, str(e)
-            except (
-                    FileNotFoundError, UnprocessableEntityError, RuntimeError,
-            ) as e:
-                yield 'error', file_path, str(e)
+                path_obj = clone_git_repo(path_str)
+                cloned_from_git = True
+            except RuntimeError as e:
+                yield 'error', Path(path_str), str(e)
+                return
+        elif not path_obj.exists():
+            raise FileNotFoundError(f"Path not found: {path_obj}")
+        try:
+            if path_obj.is_file():
+                file_paths = [path_obj]
+            else:
+                file_formats = document_ingestion.get_supported_suffixes()
+                file_paths = [f for f in path_obj.rglob('*') if f.is_file()]
+                file_paths = [f for f in file_paths if f.suffix.lower() in file_formats]
+
+            if len(file_paths) > 1:
+                file_paths = tqdm.tqdm(file_paths, desc="Adding files", unit="file", leave=True)
+
+
+            for file_path in file_paths:
+                try:
+                    self.add_file(file_path)
+                    yield 'added', file_path, None
+                except ValueError as e:
+                    yield 'skipped', file_path, str(e)
+                except (
+                        FileNotFoundError, UnprocessableEntityError, RuntimeError,
+                ) as e:
+                    yield 'error', file_path, str(e)
+        finally:
+            if cloned_from_git:
+                shutil.rmtree(path_obj)
 
     def find_all(self) -> list[LibraryFile]:
         return LibraryFileDao(collection_name=self.collection_name).find_all()

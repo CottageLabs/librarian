@@ -37,9 +37,9 @@ def cleanup_bad_encoding(docs: Iterable[Document]) -> Iterable[Document]:
 
 
 def finalize_and_save_docs(
-    docs: list[Document],
-    vectorstore=None,
-    metadata=None,
+        docs: list[Document],
+        vectorstore=None,
+        metadata=None,
 ) -> list[Document]:
     """Finalize documents and save to vector store."""
     print(f"Split into {len(docs)} chunks")
@@ -144,21 +144,6 @@ def save_any(path, vectorstore=None, text_splitter=None, metadata=None):
     path = Path(path)
     suffix_map = get_suffix_saver_map()
 
-    if path.is_dir():
-        docs: list[Document] = []
-        for file in sorted(p for p in path.rglob('*') if p.is_file()):
-            if file.suffix.lower() not in suffix_map:
-                continue
-            docs.extend(
-                save_any(
-                    file,
-                    vectorstore=vectorstore,
-                    text_splitter=text_splitter,
-                    metadata=metadata,
-                ),
-            )
-        return docs
-
     if not path.is_file():
         raise FileNotFoundError(f"File not found: {path}")
 
@@ -200,3 +185,8 @@ def get_suffix_saver_map():
         ".md": save_markdown,
         ".txt": save_text,
     }
+
+
+def get_supported_suffixes():
+    """Return a list of supported file suffixes."""
+    return list(get_suffix_saver_map().keys())

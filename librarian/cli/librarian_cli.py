@@ -136,10 +136,10 @@ def librarian_rm(hash_prefix, filename):
 
 
 @librarian.command('add')
-@click.argument('path', type=click.Path(exists=True))
+@click.argument('path', type=str)
 @click.argument('device', type=str, default='cpu')
 def librarian_add(path, device):
-    """Add document(s) to the library"""
+    """Add document(s) to the library from a file path, directory, or git repository URL"""
     from librarian.librarian import Librarian
     from librarian import components
 
@@ -148,6 +148,7 @@ def librarian_add(path, device):
 
     added_count = 0
     skipped_count = 0
+    error_count = 0
 
     results = lib.add_by_path(path)
     console = Console()
@@ -155,15 +156,19 @@ def librarian_add(path, device):
         if status == 'added':
             console.print(f"[green]Added:[/green] [cyan]{file_path}[/cyan]")
             added_count += 1
-        else:
-            console.print(f"[yellow]Skipped:[/yellow] [dim]{file_path}[/dim] - [red]{error}[/red]")
+        elif status == 'skipped':
+            console.print(f"[yellow]Skipped:[/yellow] [dim]{file_path}[/dim] - {error}")
             skipped_count += 1
+        else:
+            console.print(f"[red]Error:[/red] [dim]{file_path}[/dim] - [red]{error}[/red]")
+            error_count += 1
 
-    if added_count == 0 and skipped_count == 0:
+    if added_count == 0 and skipped_count == 0 and error_count == 0:
         console.print("[blue]ℹ[/blue] No files found to add.")
     else:
         console.print(f"\n[bold]Summary:[/bold] [green]{added_count}[/green] added,"
-                      f" [yellow]{skipped_count}[/yellow] skipped")
+                      f" [yellow]{skipped_count}[/yellow] skipped,"
+                      f" [red]{error_count}[/red] errors")
 
 
 if __name__ == '__main__':

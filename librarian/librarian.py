@@ -150,16 +150,13 @@ class Librarian:
             if len(file_paths) > 1:
                 file_paths = tqdm.tqdm(file_paths, desc="Adding files", unit="file", leave=True)
 
-
             for file_path in file_paths:
                 try:
                     self.add_file(file_path)
                     yield 'added', file_path, None
                 except ValueError as e:
                     yield 'skipped', file_path, str(e)
-                except (
-                        FileNotFoundError, UnprocessableEntityError, RuntimeError,
-                ) as e:
+                except  Exception as e:
                     yield 'error', file_path, str(e)
         finally:
             if cloned_from_git:

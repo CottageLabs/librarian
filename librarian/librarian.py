@@ -86,8 +86,13 @@ class Librarian:
             collection_name=librarian_config.get_collection_name()
         )
 
-    def add_file(self, file_path: str | Path) -> None:
-        """Add a single file to the library."""
+    def add_file(self, file_path: str | Path, additional_metadata: dict = None) -> None:
+        """Add a single file to the library.
+
+        Args:
+            file_path: Path to the file to add
+            additional_metadata: Optional dict of additional metadata to store with the file
+        """
         file_path = Path(file_path)
         print(f'Working on file: {file_path}')
 
@@ -109,11 +114,16 @@ class Librarian:
         if file_dao.exist(file_hash):
             raise ValueError(f"File with hash {file_hash} already exists in library")
 
+        # Merge metadata
+        metadata = {"hash_id": file_hash}
+        if additional_metadata:
+            metadata.update(additional_metadata)
+
         # Add to Vector Store
         document_ingestion.save_any(
             file_path,
             vectorstore=self.vector_store,
-            metadata={"hash_id": file_hash},
+            metadata=metadata,
         )
 
         # Add to DB
@@ -139,11 +149,14 @@ class Librarian:
         path_obj = Path(path)
         cloned_from_git = False
 
+        metadata = {}
+
         # Check if it's a git URL that needs to be cloned
         if path_str.endswith('.git') and not path_obj.exists():
             try:
                 path_obj = clone_git_repo(path_str)
                 cloned_from_git = True
+                metadata['source_root'] = path_str
             except RuntimeError as e:
                 yield 'error', Path(path_str), str(e)
                 return
@@ -158,13 +171,14 @@ class Librarian:
                 file_formats = document_ingestion.get_supported_suffixes()
                 file_paths = [f for f in path_obj.rglob('*') if f.is_file()]
                 file_paths = [f for f in file_paths if f.suffix.lower() in file_formats]
+                metadata['source_root'] = str(path_obj.resolve())
 
             if len(file_paths) > 1:
                 file_paths = tqdm.tqdm(file_paths, desc="Adding files", unit="file", leave=True)
 
             for file_path in file_paths:
                 try:
-                    self.add_file(file_path)
+                    self.add_file(file_path, additional_metadata=metadata)
                     yield 'added', file_path, None
                 except ValueError as e:
                     yield 'skipped', file_path, str(e)

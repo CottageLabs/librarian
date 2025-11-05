@@ -59,10 +59,10 @@ def save_pdf(pdf_path, vectorstore=None, text_splitter=None, metadata=None):
     pages = list(cleanup_bad_encoding(pages))
 
     print(f"Loaded {len(pages)} pages from PDF")
-
     if text_splitter is None:
         text_splitter = create_default_text_splitter()
 
+    # KTODO extract duplicate code
     docs = text_splitter.split_documents(pages)
     docs = list(docs)
 

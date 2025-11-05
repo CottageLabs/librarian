@@ -4,6 +4,12 @@ from librarian.dao.schema.dao_schema import LibraryFile
 
 class LibraryFileDao(BaseDao):
 
+    @classmethod
+    def from_collection(cls, collection_name: str):
+        from librarian import cpaths
+        url = f"sqlite:///{cpaths.DB_SQLITE_PATH}-{collection_name}"
+        return cls(url=url)
+
     @property
     def model_class(self):
         return LibraryFile

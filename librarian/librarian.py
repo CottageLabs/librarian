@@ -105,7 +105,7 @@ class Librarian:
         print(f"File hash: {file_hash}")
 
         # Check hash existence in DB
-        file_dao = LibraryFileDao(collection_name=self.collection_name)
+        file_dao = LibraryFileDao.from_collection(self.collection_name)
         if file_dao.exist(file_hash):
             raise ValueError(f"File with hash {file_hash} already exists in library")
 
@@ -175,15 +175,15 @@ class Librarian:
                 shutil.rmtree(path_obj)
 
     def find_all_files(self) -> list[LibraryFile]:
-        return LibraryFileDao(collection_name=self.collection_name).find_all()
+        return LibraryFileDao.from_collection(self.collection_name).find_all()
 
     def count_files(self) -> int:
         """Count total number of documents in the library."""
-        return LibraryFileDao(collection_name=self.collection_name).count()
+        return LibraryFileDao.from_collection(self.collection_name).count()
 
     def find_latest_files(self, limit: int = 10) -> list[LibraryFile]:
         """Find the latest n documents ordered by creation date."""
-        with LibraryFileDao(collection_name=self.collection_name).create_session() as session:
+        with LibraryFileDao.from_collection(self.collection_name).create_session() as session:
             return list(session.query(LibraryFile)
                         .order_by(LibraryFile.created_at.desc())
                         .limit(limit)
@@ -195,14 +195,14 @@ class Librarian:
         vector_service.delete_collection()
 
         # Clear all library file records from database
-        LibraryFileDao(collection_name=self.collection_name).delete()
+        LibraryFileDao.from_collection(self.collection_name).delete()
 
     def remove(self, hash_prefix: str = None, filename: str = None) -> bool:
         """Remove a library file by hash prefix or filename from both vector store and database."""
         from qdrant_client import models
 
         # Check if file exists in database
-        file_dao = LibraryFileDao(collection_name=self.collection_name)
+        file_dao = LibraryFileDao.from_collection(self.collection_name)
 
         files = file_dao.find(
             hash_prefix=hash_prefix,
@@ -238,7 +238,7 @@ class Librarian:
         )
 
         # Delete from database
-        LibraryFileDao(collection_name=self.collection_name).delete(LibraryFile.hash_id == hash_id)
+        LibraryFileDao.from_collection(self.collection_name).delete(LibraryFile.hash_id == hash_id)
 
         return True
 

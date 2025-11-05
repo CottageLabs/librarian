@@ -242,6 +242,30 @@ class Librarian:
 
         return True
 
+    def search(self, query: str, limit: int = 5) -> list[dict]:
+        """Search documents by similarity to query text.
+
+        Args:
+            query: Search query text
+            limit: Maximum number of results to return
+
+        Returns:
+            List of dicts with keys:
+                - content: Document text content
+                - metadata: Document metadata dict
+                - score: Similarity score (float)
+        """
+        results = self.vector_store.similarity_search_with_score(query, k=limit)
+
+        return [
+            {
+                'content': doc.page_content,
+                'metadata': doc.metadata,
+                'score': score
+            }
+            for doc, score in results
+        ]
+
 
 def main__add_test_file():
     librarian = Librarian()

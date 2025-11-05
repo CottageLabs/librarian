@@ -171,5 +171,59 @@ def librarian_add(path, device):
                       f" [red]{error_count}[/red] errors")
 
 
+@librarian.command('search')
+@click.argument('query', type=str)
+@click.option('--limit', '-n', default=5, help='Maximum number of results to return')
+def librarian_search(query, limit):
+    """Search documents by similarity to query text"""
+    from librarian.librarian import Librarian
+    from rich.panel import Panel
+    from rich.text import Text
+
+    lib = Librarian()
+    results = lib.search(query, limit=limit)
+
+    console = Console()
+
+    if not results:
+        console.print("[yellow]No results found.[/yellow]")
+        return
+
+    console.print(f"\n[bold]Search results for:[/bold] [cyan]{query}[/cyan]\n")
+
+    for idx, doc in enumerate(results, 1):
+        content = doc['content']
+        metadata = doc['metadata']
+        score = doc['score']
+
+        title = Text()
+        title.append(f"Result {idx}", style="bold cyan")
+        title.append(f" (Score: {score:.4f})", style="yellow")
+
+        meta_info = []
+        if 'source' in metadata:
+            meta_info.append(f"Source: {metadata['source']}")
+        if 'page' in metadata:
+            meta_info.append(f"Page: {metadata['page']}")
+        if 'hash_id' in metadata:
+            meta_info.append(f"Hash: {metadata['hash_id'][:14]}")
+
+        meta_str = " | ".join(meta_info) if meta_info else "No metadata"
+
+        all_metadata = "\n".join([f"  {k}: {v}" for k, v in metadata.items()])
+        panel_content = f"[dim]{meta_str}[/dim]\n\n{content}\n\n[dim]Full metadata:[/dim]\n[dim]{all_metadata}[/dim]"
+
+        panel = Panel(
+            panel_content,
+            title=title,
+            title_align="left",
+            border_style="blue",
+            padding=(1, 2)
+        )
+
+        console.print(panel)
+        console.print()
+
+
 if __name__ == '__main__':
     librarian()

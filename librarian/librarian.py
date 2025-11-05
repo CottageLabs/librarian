@@ -174,22 +174,22 @@ class Librarian:
             if cloned_from_git:
                 shutil.rmtree(path_obj)
 
-    def find_all(self) -> list[LibraryFile]:
+    def find_all_files(self) -> list[LibraryFile]:
         return LibraryFileDao(collection_name=self.collection_name).find_all()
 
-    def count(self) -> int:
+    def count_files(self) -> int:
         """Count total number of documents in the library."""
         return LibraryFileDao(collection_name=self.collection_name).count()
 
-    def find_latest(self, limit: int = 10) -> list[LibraryFile]:
+    def find_latest_files(self, limit: int = 10) -> list[LibraryFile]:
         """Find the latest n documents ordered by creation date."""
-        with BaseDao(collection_name=self.collection_name).create_session() as session:
+        with LibraryFileDao(collection_name=self.collection_name).create_session() as session:
             return list(session.query(LibraryFile)
                         .order_by(LibraryFile.created_at.desc())
                         .limit(limit)
                         .all())
 
-    def drop_vector_store(self):
+    def drop_collection(self):
         """Drop the entire vector store collection and clear database records."""
         vector_service = VectorStoreService(self.vector_store)
         vector_service.delete_collection()
@@ -248,7 +248,7 @@ def main__add_test_file():
     librarian.add_file(Path.home() / 'tmp/test-file/deep-learning.pdf')
     librarian.add_file(Path.home() / 'tmp/test-file/rl1.pdf')
     librarian.add_file(Path.home() / 'tmp/test-file/rl2.pdf')
-    files = librarian.find_all()
+    files = librarian.find_all_files()
     for f in files:
         print(f"{f.hash_id}, {f.file_name}, {f.created_at}")
 

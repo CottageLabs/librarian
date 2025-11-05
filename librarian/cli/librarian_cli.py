@@ -68,13 +68,13 @@ def librarian_ls(limit):
     from librarian.librarian import Librarian
 
     lib = Librarian()
-    total_count = lib.count()
+    total_count = lib.count_files()
 
     if total_count == 0:
         click.echo("No documents found in library.")
         return
 
-    files = lib.find_latest(limit)
+    files = lib.find_latest_files(limit)
 
     console = Console()
 
@@ -105,7 +105,7 @@ def librarian_drop(force):
             click.echo("Operation cancelled.")
             return
 
-    lib.drop_vector_store()
+    lib.drop_collection()
 
     save_collection_name(DEFAULT_COLLECTION_NAME)
     click.echo("Vector store and library records have been cleared.")

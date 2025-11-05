@@ -129,7 +129,10 @@ def save_markdown(md_path, vectorstore=None, text_splitter=None, metadata=None):
 
     md_header_splits = []
     for page in pages:
-        md_header_splits.extend(markdown_splitter.split_text(page.page_content))
+        items = markdown_splitter.split_text(page.page_content)
+        for i in items:
+            i.metadata = page.metadata | (i.metadata or {})
+        md_header_splits.extend(items)
 
     if text_splitter is None:
         text_splitter = create_default_text_splitter()

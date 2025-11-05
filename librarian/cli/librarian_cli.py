@@ -1,7 +1,6 @@
 import click
 from rich.console import Console
 from rich.table import Table
-from tqdm import tqdm
 
 
 @click.group()
@@ -49,16 +48,17 @@ def librarian_status():
 @click.argument('name', type=str)
 def librarian_checkout(name):
     """Persist a collection name for future store operations."""
-    from librarian.librarian_config import get_collection_name, save_collection_name
 
-    previous = get_collection_name()
-    save_collection_name(name)
-    updated = get_collection_name()
+    from librarian.librarian import Librarian
 
-    if updated == previous:
-        click.echo(f"Collection remains '{updated}'.")
-    else:
-        click.echo(f"Collection updated to '{updated}'.")
+    lib = Librarian()
+    previous = lib.collection_name
+    if previous == name:
+        click.echo(f"Collection remains '{name}'.")
+        return
+
+    lib.switch_collection(name)
+    click.echo(f"Collection updated to '{name}'.")
 
 
 @librarian.command('ls')

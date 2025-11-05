@@ -6,7 +6,7 @@ from pathlib import Path
 import tqdm
 from unstructured.errors import UnprocessableEntityError
 
-from librarian import components
+from librarian import components, librarian_config
 from librarian import document_ingestion
 from librarian.constants import MAX_FILE_SIZE_BYTES
 from librarian.cpaths import GITREPO_DIR
@@ -69,12 +69,22 @@ class Librarian:
     """
 
     def __init__(self, vector_store=None):
-        self.vector_store = vector_store or components.get_vector_store()
+        self.vector_store = vector_store or components.get_vector_store(
+            collection_name=librarian_config.get_collection_name()
+        )
 
     @property
     def collection_name(self) -> str:
         """Get collection name from vector store or default config."""
-        return getattr(self.vector_store, "collection_name", None) or get_collection_name()
+        return self.vector_store.collection_name
+
+    def switch_collection(self, collection_name: str) -> None:
+        """Switch to a different collection in the vector store."""
+        librarian_config.save_collection_name(collection_name)
+        self.vector_store.client.close()
+        self.vector_store = components.get_vector_store(
+            collection_name=librarian_config.get_collection_name()
+        )
 
     def add_file(self, file_path: str | Path) -> None:
         """Add a single file to the library."""
@@ -139,6 +149,8 @@ class Librarian:
                 return
         elif not path_obj.exists():
             raise FileNotFoundError(f"Path not found: {path_obj}")
+
+
         try:
             if path_obj.is_file():
                 file_paths = [path_obj]

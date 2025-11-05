@@ -92,7 +92,8 @@ def librarian_ls(limit):
 
 @librarian.command('drop')
 @click.option('--force', is_flag=True, help='Skip confirmation prompt')
-def librarian_drop(force):
+@click.option('--keep-collection', is_flag=True, help='Keep current collection name instead of switching to default')
+def librarian_drop(force, keep_collection):
     """Remove entire vector store directory and database records"""
     from librarian.librarian import Librarian
     from librarian.librarian_config import save_collection_name
@@ -107,8 +108,11 @@ def librarian_drop(force):
 
     lib.drop_collection()
 
-    save_collection_name(DEFAULT_COLLECTION_NAME)
-    click.echo("Vector store and library records have been cleared.")
+    if not keep_collection:
+        save_collection_name(DEFAULT_COLLECTION_NAME)
+        click.echo("Vector store and library records have been cleared.")
+    else:
+        click.echo(f"Vector store and library records have been cleared. Collection remains '{lib.collection_name}'.")
 
 
 @librarian.command('rm')

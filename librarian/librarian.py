@@ -171,7 +171,8 @@ class Librarian:
                 file_formats = document_ingestion.get_supported_suffixes()
                 file_paths = [f for f in path_obj.rglob('*') if f.is_file()]
                 file_paths = [f for f in file_paths if f.suffix.lower() in file_formats]
-                metadata['source_root'] = str(path_obj.resolve())
+                if metadata.get('source_root') is None:
+                    metadata['source_root'] = str(path_obj.resolve())
 
             if len(file_paths) > 1:
                 file_paths = tqdm.tqdm(file_paths, desc="Adding files", unit="file", leave=True)

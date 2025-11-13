@@ -24,6 +24,12 @@ dependencies = [
     "unstructured[epub,md]>=0.10.0",
 ]
 
+[project.optional-dependencies]
+mcp = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.21.0",
+]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["librarian*"]

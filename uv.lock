@@ -860,14 +860,12 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "click" },
-    { name = "httpx" },
     { name = "langchain-community" },
     { name = "langchain-core" },
     { name = "langchain-huggingface" },
     { name = "langchain-qdrant" },
     { name = "langchain-text-splitters" },
     { name = "langchain-unstructured" },
-    { name = "mcp", extra = ["cli"] },
     { name = "pypandoc-binary" },
     { name = "pypdf" },
     { name = "qdrant-client" },
@@ -880,17 +878,23 @@ dependencies = [
     { name = "unstructured", extra = ["epub", "md"] },
 ]
 
+[package.optional-dependencies]
+mcp = [
+    { name = "httpx" },
+    { name = "mcp", extra = ["cli"] },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.3.0" },
-    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "httpx", marker = "extra == 'mcp'", specifier = ">=0.28.1" },
     { name = "langchain-community", specifier = ">=0.3.31" },
     { name = "langchain-core", specifier = ">=0.3.78" },
     { name = "langchain-huggingface", specifier = ">=0.3.1" },
     { name = "langchain-qdrant", specifier = ">=0.2.1" },
     { name = "langchain-text-splitters", specifier = ">=0.3.11" },
     { name = "langchain-unstructured", specifier = ">=0.1.5" },
-    { name = "mcp", extras = ["cli"], specifier = ">=1.21.0" },
+    { name = "mcp", extras = ["cli"], marker = "extra == 'mcp'", specifier = ">=1.21.0" },
     { name = "pypandoc-binary", specifier = ">=1.15" },
     { name = "pypdf", specifier = ">=6.1.1" },
     { name = "qdrant-client", specifier = ">=1.15.1" },
@@ -902,6 +906,7 @@ requires-dist = [
     { name = "tqdm", specifier = ">=4.66.0" },
     { name = "unstructured", extras = ["epub", "md"], specifier = ">=0.10.0" },
 ]
+provides-extras = ["mcp"]
 
 [[package]]
 name = "lxml"

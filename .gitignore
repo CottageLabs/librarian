@@ -9,5 +9,7 @@ wheels/
 # Virtual environments
 .venv
 
+# AI agent temporary files
+ai-agent-tmp/
 
 .idea

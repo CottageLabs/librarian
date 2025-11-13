@@ -17,29 +17,27 @@ def librarian_status():
     from librarian.librarian_config import get_collection_name
 
     lib = Librarian()
-    client = lib.vector_store.client
 
     console = Console()
 
     qdrant_path = get_qdrant_data_path()
     config_table = Table(title="Qdrant Configuration", show_header=False, box=None)
     config_table.add_row("Qdrant Path", str(qdrant_path))
-    config_table.add_row("Collection Name", get_collection_name())
+    config_table.add_row("Collection Name", lib.collection_name)
     console.print(config_table)
 
     console.print("\n[bold]Collections:[/bold]")
-    collections = client.get_collections()
+    collections_info = lib.get_collections_info()
 
-    if not collections.collections:
+    if not collections_info:
         console.print("[dim]No collections found[/dim]")
     else:
         table = Table()
         table.add_column("Collection Name", style="cyan")
         table.add_column("Points Count", style="magenta", justify="right")
 
-        for collection in collections.collections:
-            collection_info = client.get_collection(collection.name)
-            table.add_row(collection.name, str(collection_info.points_count))
+        for name, count in collections_info.items():
+            table.add_row(name, str(count))
 
         console.print(table)
 

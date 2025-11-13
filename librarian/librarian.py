@@ -281,6 +281,22 @@ class Librarian:
             for doc, score in results
         ]
 
+    def get_collections_info(self) -> dict[str, int]:
+        """Get information about all collections.
+
+        Returns:
+            Dict mapping collection name to points count
+        """
+        client = self.vector_store.client
+        collections = client.get_collections()
+
+        collections_info = {}
+        for collection in collections.collections:
+            collection_info = client.get_collection(collection.name)
+            collections_info[collection.name] = collection_info.points_count
+
+        return collections_info
+
 
 def main__add_test_file():
     librarian = Librarian()

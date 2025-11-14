@@ -1,22 +1,24 @@
 Librarian
 ---------------------------
-Command line tool and library for manage your vector store
+Command line tool and library for managing your vector store
 
 Features:
 
-- avoid re-import the same file
-- librarian -- command line tool for vector store management
+- **Deduplication**: Automatically avoid re-importing the same file using content hashing
+- **Command-line interface**: Manage your vector store with the `librarian` CLI tool
+- **Multiple collections**: Organize documents into separate collections for different projects
+- **File format support**: Import text, markdown, PDF, and EPUB files
 
 Components
 ---------------------------
-- Qdrant - vector store backend, file will be chunked, text, vector and metadata will be stored
+- Qdrant - vector store backend, files will be chunked, text, vector and metadata will be stored
 - sqlite - to track imported files and avoid re-import the same file
 
 Setup uv environment
 ---------------------------
 
 - For first-time use run `uv run python -m librarian.setup.setup_pandoc`.
-- pandoc is used to read epub files
+- Pandoc is required for converting EPUB files to text for processing
 
 
 
@@ -68,13 +70,13 @@ Environment Variables
 
 Librarian Usage
 ---------------------------
-`librarian` command line tool help to import files to vector store
+`librarian` command line tool helps import files to vector store
 
 
 ## Status
 
 `librarian` have important state `collection`, mostly command will operate on current collection.
-Ussr and use `status` to check current collection and use `checkout` to switch collection.
+Use `status` to check current collection and use `checkout` to switch collection.
 
 
 ```bash

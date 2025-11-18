@@ -1,5 +1,5 @@
 from librarian import components
-from librarian.librarian import Librarian
+from librarian.core.librarian import Librarian
 
 
 def main():

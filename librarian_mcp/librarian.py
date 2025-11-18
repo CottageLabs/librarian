@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from librarian.librarian import Librarian
+from librarian.core.librarian import Librarian
 from librarian.envvars import get_qdrant_data_path
 
 mcp = FastMCP("librarian")

@@ -12,7 +12,7 @@ def librarian():
 @librarian.command('status')
 def librarian_status():
     """Show library status including Qdrant path, collection name, and records"""
-    from librarian.librarian import Librarian
+    from librarian.core.librarian import Librarian
     from librarian.envvars import get_qdrant_data_path
     from librarian.librarian_config import get_collection_name
 
@@ -47,7 +47,7 @@ def librarian_status():
 def librarian_checkout(name):
     """Persist a collection name for future store operations."""
 
-    from librarian.librarian import Librarian
+    from librarian.core.librarian import Librarian
 
     lib = Librarian()
     previous = lib.collection_name
@@ -63,7 +63,7 @@ def librarian_checkout(name):
 @click.option('--limit', '-n', default=10, help='Number of latest documents to show')
 def librarian_ls(limit):
     """Show latest n documents added to the library"""
-    from librarian.librarian import Librarian
+    from librarian.core.librarian import Librarian
 
     lib = Librarian()
     total_count = lib.count_files()
@@ -93,7 +93,7 @@ def librarian_ls(limit):
 @click.option('--keep-collection', is_flag=True, help='Keep current collection name instead of switching to default')
 def librarian_drop(force, keep_collection):
     """Remove entire vector store directory and database records"""
-    from librarian.librarian import Librarian
+    from librarian.core.librarian import Librarian
     from librarian.librarian_config import save_collection_name
     from librarian.constants import DEFAULT_COLLECTION_NAME
     lib = Librarian()
@@ -118,7 +118,7 @@ def librarian_drop(force, keep_collection):
 @click.option('--filename', '-f', default=None, help='Filename to match (partial)')
 def librarian_rm(hash_prefix, filename):
     """Remove document by hash prefix or filename"""
-    from librarian.librarian import Librarian
+    from librarian.core.librarian import Librarian
 
     if not hash_prefix and not filename:
         click.echo("Error: Must provide either --hash-prefix or --filename")
@@ -142,7 +142,7 @@ def librarian_rm(hash_prefix, filename):
 @click.argument('device', type=str, default='cpu')
 def librarian_add(path, device):
     """Add document(s) to the library from a file path, directory, or git repository URL"""
-    from librarian.librarian import Librarian
+    from librarian.core.librarian import Librarian
     from librarian import components
 
     vector_store = components.get_vector_store(device=device)
@@ -178,7 +178,7 @@ def librarian_add(path, device):
 @click.option('--limit', '-n', default=5, help='Maximum number of results to return')
 def librarian_search(query, limit):
     """Search documents by similarity to query text"""
-    from librarian.librarian import Librarian
+    from librarian.core.librarian import Librarian
     from rich.panel import Panel
     from rich.text import Text
 

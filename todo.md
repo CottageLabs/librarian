@@ -5,4 +5,5 @@
 - [x] support MCP
 - [x] create a class Librarian to handle add_file, delete_file, query
 - [x] avoid re-import the same file
+- [ ] fix issue when switch qdrant connection from QDRANT_DATA_PATH to QDRANT_DATA_URL, should use new sqlite db
 

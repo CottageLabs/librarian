@@ -62,7 +62,10 @@ codex mcp add librarian \
 Environment Variables
 ---------------------------
 
-- QDRANT_DATA_PATH: path to store qdrant vector db data
+| Variable Name      | Description |
+|--------------------|-------------|
+| QDRANT_DATA_URL    | url to connect qdrant server, QDRANT_DATA_PATH will be ignored if this variable is set |
+| QDRANT_DATA_PATH   | path to store qdrant vector db data |
 
 
 

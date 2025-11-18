@@ -11,3 +11,10 @@ def get_qdrant_data_path() -> Path:
     if env_value:
         return Path(env_value)
     return PROJ_HOME / 'qdrant'
+
+
+def get_qdrant_data_url() -> str | None:
+    """Get Qdrant data URL from environment variable."""
+    return os.getenv('QDRANT_DATA_URL')
+
+

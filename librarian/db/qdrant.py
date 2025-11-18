@@ -26,8 +26,7 @@ def get_client(location=None, path=None, **kwargs):
     return qdrant
 
 
-def get_vector_store(client=None, collection_name=None, device='cpu'):
-    # KTODO use device on all caller
+def get_vector_store(client=None, collection_name=None, device=None):
     if client is None:
         client = get_client()
 

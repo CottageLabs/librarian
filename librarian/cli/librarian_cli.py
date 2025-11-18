@@ -139,7 +139,7 @@ def librarian_rm(hash_prefix, filename):
 
 @librarian.command('add')
 @click.argument('path', type=str)
-@click.argument('device', type=str, default='cpu')
+@click.option('--device', type=str, default=None, help='Device to use for embeddings (cpu/cuda). Auto-detects if not specified.')
 def librarian_add(path, device):
     """Add document(s) to the library from a file path, directory, or git repository URL"""
     from librarian.core.librarian import Librarian

@@ -1,9 +1,13 @@
 from langchain_huggingface import HuggingFaceEmbeddings
 
 from librarian.constants import DEFAULT_EMBEDDING
+from librarian.device import get_device
 
 
-def get_embedding(device='cpu'):
+def get_embedding(device=None):
+    if device is None:
+        device = get_device()
+
     embedding = HuggingFaceEmbeddings(
         model_name=DEFAULT_EMBEDDING,
         model_kwargs={"device": device}
